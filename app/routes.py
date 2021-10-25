@@ -26,7 +26,7 @@ def handle_books():
         db.session.commit()
         return make_response(f"Book {new_book.title} successfully created", 201)
 
-@books_bp.route("/<book_id>", methods=["GET", "PUT"])
+@books_bp.route("/<book_id>", methods=["GET", "PUT", "DELETE"])
 def handle_book(book_id):
     book = Book.query.get(book_id)
 
@@ -43,5 +43,11 @@ def handle_book(book_id):
         book.description = form_data["description"]
 
         db.session.commit()
-        return make_response(f"Book #{book.id} successfully updated")
+        return make_response(f"Book #{book.id} successfully updates")
+
+    elif request.method == "DELETE":
+        # SQLAlchemy's function to tell database to prepare to delete book
+        db.session.delete(book)
+        db.session.commit()
+        return make_response(f"Book #{book.id} successfully deleted")
 
