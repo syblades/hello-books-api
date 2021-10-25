@@ -31,7 +31,7 @@ def handle_book(book_id):
     book = Book.query.get(book_id)
 
     if book is None:
-        return jsonify("Not Found", 404), 404
+        return make_response("", 404)
 
     if request.method == "GET":
         return {
