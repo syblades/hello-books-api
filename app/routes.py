@@ -8,7 +8,16 @@ books_bp = Blueprint("books", __name__, url_prefix="/books")
 @books_bp.route("", methods=["GET", "POST"])
 def handle_books():
     if request.method == "GET":
-        books = Book.query.all()
+        # uses request.args object to access value of query param
+        title_query = request.args.get("title")
+
+        # Decide which conditional branch to take, checks if we got a query param
+        if title_query:
+            # 'books' stores result of query
+            books = Book.query.filter_by(title=title_query)
+        else:
+            books = Book.query.all()
+
         books_response = []
         for book in books:
             books_response.append({
@@ -24,14 +33,14 @@ def handle_books():
 
         db.session.add(new_book)
         db.session.commit()
-        return make_response(f"Book {new_book.title} successfully created", 201)
+        return jsonify(f"Book {new_book.title} successfully created"), 201
 
 @books_bp.route("/<book_id>", methods=["GET", "PUT", "DELETE"])
 def handle_book(book_id):
     book = Book.query.get(book_id)
 
     if book is None:
-        return make_response("", 404)
+        return jsonify("Not found"), 404
 
     if request.method == "GET":
         return {
@@ -41,17 +50,17 @@ def handle_book(book_id):
         }
 
     elif request.method == "PUT":
-        form_data = request.get_json()
+        request_body = request.get_json()
 
-        book.title = form_data["title"]
-        book.description = form_data["description"]
+        book.title = request_body["title"]
+        book.description = request_body["description"]
 
         db.session.commit()
-        return make_response(f"Book #{book.id} successfully updates")
+        return jsonify(f"Book #{book.id} successfully updated"), 200
 
     elif request.method == "DELETE":
         # SQLAlchemy's function to tell database to prepare to delete book
         db.session.delete(book)
         db.session.commit()
-        return make_response(f"Book #{book.id} successfully deleted")
+        return jsonify(f"Book #{book.id} successfully deleted"), 200
 
